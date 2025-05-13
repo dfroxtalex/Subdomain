@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subdomain Fetcher</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --neon-green: #00ff41;
+            --neon-blue: #0ef;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: rgba(18, 18, 18, 0.8);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            font-family: 'Share Tech Mono', monospace;
+            background-image:
+                radial-gradient(circle at 25% 15%, rgba(0, 255, 65, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(14, 255, 255, 0.05) 0%, transparent 25%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .neon-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(14, 255, 255, 0.2);
+        }
+
+        .neon-text {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.7);
+        }
+
+        .neon-blue-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px rgba(14, 255, 255, 0.7);
+        }
+
+        .neon-button {
+            background-color: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .neon-button:hover {
+            background-color: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+        }
+
+        .neon-button-blue {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px rgba(14, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(14, 255, 255, 0.2);
+        }
+
+        .neon-button-blue:hover {
+            background-color: rgba(14, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(14, 255, 255, 0.4);
+            text-shadow: 0 0 8px rgba(14, 255, 255, 0.8);
+        }
+
+        .neon-input {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(14, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .neon-input:focus {
+            box-shadow: 0 0 15px rgba(14, 255, 255, 0.3);
+            border-color: var(--neon-blue);
+            outline: none;
+        }
+
+        .subdomain-item {
+            background-color: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid var(--neon-green);
+            transition: all 0.3s ease;
+        }
+
+        .subdomain-item:hover {
+            background-color: rgba(0, 255, 65, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .ip-badge {
+            background-color: rgba(14, 255, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            font-size: 0.7rem;
+        }
+
+        .glitch-effect {
+            position: relative;
+        }
+
+        .glitch-effect::before,
+        .glitch-effect::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+        }
+
+        .glitch-effect::before {
+            left: 2px;
+            text-shadow: -1px 0 rgba(0, 255, 65, 0.7);
+            animation: glitch-animation 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        .glitch-effect::after {
+            left: -2px;
+            text-shadow: 1px 0 rgba(14, 255, 255, 0.7);
+            animation: glitch-animation 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-animation {
+            0% {
+                clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%);
+            }
+            20% {
+                clip-path: polygon(0 15%, 100% 15%, 100% 15%, 0 15%);
+            }
+            40% {
+                clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%);
+            }
+            60% {
+                clip-path: polygon(0 1%, 100% 1%, 100% 2%, 0 2%);
+            }
+            80% {
+                clip-path: polygon(0 33%, 100% 33%, 100% 33%, 0 33%);
+            }
+            100% {
+                clip-path: polygon(0 44%, 100% 44%, 100% 44%, 0 44%);
+            }
+        }
+
+        .scanner-line {
+            height: 2px;
+            width: 100%;
+            background-color: var(--neon-green);
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.7);
+            animation: scan 3s ease-in-out infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+            50% {
+                top: 100%;
+            }
+            100% {
+                top: 0;
+            }
+        }
+
+        .grid-pattern {
+            background-image: linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                                 linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hexgrid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%2300ff41' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .progress-bar {
+            height: 5px;
+            background-color: rgba(0, 255, 65, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background-color: var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: progressAnimation 2s ease-in-out infinite;
+            width: 0%;
+        }
+
+        @keyframes progressAnimation {
+            0% { box-shadow: 0 0 10px var(--neon-green); }
+            50% { box-shadow: 0 0 20px var(--neon-green); }
+            100% { box-shadow: 0 0 10px var(--neon-green); }
+        }
+
+        .connect-line {
+            position: absolute;
+            background-color: var(--neon-green);
+            height: 2px;
+            opacity: 0;
+            animation: connectFadeIn 1s forwards;
+            box-shadow: 0 0 8px var(--neon-green);
+        }
+
+        @keyframes connectFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 0.5; }
+        }
+
+        .data-pixels {
+            background-image: radial-gradient(var(--neon-green) 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+        .status-text {
+            font-size: 0.8rem;
+            animation: blinkingText 1.5s infinite;
+        }
+
+        @keyframes blinkingText {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .data-flow-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                rgba(0, 255, 65, 0) 0%,
+                rgba(0, 255, 65, 0.05) 50%,
+                rgba(0, 255, 65, 0) 100%);
+            animation: dataFlow 2s infinite linear;
+        }
+
+        @keyframes dataFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .hidden-initially {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .count-badge {
+            background-color: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--neon-green);
+            font-size: 0.8rem;
+        }
+
+        .stats-container {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+        }
+
+        .cyber-decoration {
+            position: absolute;
+            border: 1px solid var(--neon-blue);
+            width: 15px;
+            height: 15px;
+            opacity: 0.8;
+        }
+
+        .cyber-decoration-tl {
+            top: -5px;
+            left: -5px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .cyber-decoration-tr {
+            top: -5px;
+            right: -5px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .cyber-decoration-bl {
+            bottom: -5px;
+            left: -5px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .cyber-decoration-br {
+            bottom: -5px;
+            right: -5px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-top: 3px solid var(--neon-green);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #results-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #results-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        #results-list::-webkit-scrollbar-thumb {
+            background-color: var(--neon-green);
+            border-radius: 10px;
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .counter {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4">
+    <div class="hexgrid"></div>
+    <div class="grid-pattern"></div>
+
+    <div class="container mx-auto">
+        <header class="text-center mb-6 relative py-2">
+            <h1 class="text-3xl md:text-5xl font-bold mb-2 glitch-effect neon-text" data-text="SUBDOMAIN FETCHER">SUBDOMAIN FETCHER</h1>
+            <div class="text-sm neon-blue-text">Created by patel, dfroxt</div>
+            <div class="text-xs text-gray-400 mt-1">@ANNYM0U5 (Telegram) | @4j4x_official (Instagram)</div>
+        </header>
+
+        <div class="neon-card p-4 md:p-6 rounded-lg mb-8 relative overflow-hidden">
+            <div class="cyber-decoration cyber-decoration-tl"></div>
+            <div class="cyber-decoration cyber-decoration-tr"></div>
+            <div class="cyber-decoration cyber-decoration-bl"></div>
+            <div class="cyber-decoration cyber-decoration-br"></div>
+            <div class="scanner-line"></div>
+
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                <div class="flex-grow">
+                    <div class="flex">
+                        <input type="text" id="domain-input" placeholder="Enter domain (e.g. example.com)" class="neon-input w-full px-4 py-2 rounded-l focus:outline-none" />
+                        <button id="fetch-btn" class="neon-button px-4 py-2 rounded-r font-semibold flex items-center justify-center whitespace-nowrap">
+                            <span>FETCH</span>
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">Fetches subdomains using crt.sh certificate data</div>
+                </div>
+
+                <button id="download-btn" class="neon-button-blue px-4 py-2 rounded font-semibold flex items-center justify-center" disabled>
+                    <i class="fas fa-download mr-2"></i>
+                    <span>DOWNLOAD TXT</span>
+                </button>
+            </div>
+
+            <div id="status-container" class="mt-4 hidden">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="loading-spinner mr-2"></div>
+                        <span id="status-text" class="status-text neon-blue-text">Initializing scan...</span>
+                    </div>
+                    <div id="counter" class="counter neon-green-text"></div>
+                </div>
+
+                <div class="progress-bar mt-2">
+                    <div id="progress-bar-inner" class="progress-bar-inner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-container" class="neon-card rounded-lg p-4 md:p-6 relative hidden-initially opacity-0">
+            <div class="cyber-decoration cyber-decoration-tl"></div>
+            <div class="cyber-decoration cyber-decoration-tr"></div>
+            <div class="cyber-decoration cyber-decoration-bl"></div>
+            <div class="cyber-decoration cyber-decoration-br"></div>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold neon-text mb-1">SCAN RESULTS</h2>
+                    <div class="text-sm text-gray-400" id="target-domain"></div>
+                </div>
+
+                <div class="stats-container px-4 py-2 rounded flex items-center space-x-6 mt-2 md:mt-0">
+                    <div class="text-center">
+                        <div class="text-xs text-gray-400">FOUND</div>
+                        <div class="neon-blue-text font-bold" id="subdomain-count">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-400">RESOLVED</div>
+                        <div class="neon-green-text font-bold" id="resolved-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative overflow-hidden">
+                <div class="data-flow-animation"></div>
+                <div id="results-list" class="space-y-2 max-h-[400px] overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const domainInput = document.getElementById('domain-input');
+            const fetchBtn = document.getElementById('fetch-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const statusContainer = document.getElementById('status-container');
+            const statusText = document.getElementById('status-text');
+            const progressBarInner = document.getElementById('progress-bar-inner');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsList = document.getElementById('results-list');
+            const targetDomain = document.getElementById('target-domain');
+            const subdomainCount = document.getElementById('subdomain-count');
+            const resolvedCount = document.getElementById('resolved-count');
+            const counter = document.getElementById('counter');
+
+            let discoveredSubdomains = [];
+            let resolvedIPs = 0;
+            let progressInterval = null; // To store the interval ID
+
+            fetchBtn.addEventListener('click', fetchSubdomains);
+            domainInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    fetchSubdomains();
+                }
+            });
+
+            downloadBtn.addEventListener('click', downloadResults);
+
+            function fetchSubdomains() {
+                const domain = domainInput.value.trim();
+                if (!domain) {
+                    flashInput();
+                    return;
+                }
+
+                // Reset UI and hide results
+                resultsList.innerHTML = '';
+                discoveredSubdomains = [];
+                resolvedIPs = 0;
+                subdomainCount.innerText = '0';
+                resolvedCount.innerText = '0';
+                resultsContainer.classList.add('hidden-initially', 'opacity-0'); // Ensure results are hidden
+                downloadBtn.disabled = true;
+                 if (progressInterval) {
+                    clearInterval(progressInterval); // Clear any previous interval
+                }
+
+
+                // Show status container
+                statusContainer.classList.remove('hidden');
+
+                // Update target domain
+                targetDomain.innerHTML = `<span class="neon-text">${domain}</span>`;
+
+                // Fetch subdomains
+                statusText.innerText = 'Initializing scan...';
+                progressBarInner.style.width = '10%';
+
+                // Simulate progress animation
+                let progress = 10;
+                progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) {
+                        // Stop animation before actual fetch finishes
+                        clearInterval(progressInterval);
+                    } else {
+                        progressBarInner.style.width = progress + '%';
+                    }
+                }, 100);
+
+                const apiURL = `https://crt.sh/?q=%.${domain}&output=json`;
+
+                // Start fetch
+                statusText.innerText = 'Fetching certificate data...';
+
+                fetch(apiURL)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        clearInterval(progressInterval); // Ensure interval is cleared on success
+                        progressBarInner.style.width = '100%';
+                        statusText.innerText = 'Processing results...';
+
+                        // Extract unique subdomains
+                        const uniqueSubdomains = new Set();
+                        data.forEach(cert => {
+                            // Split multiple domains (sometimes crt.sh returns multiple domains in one entry)
+                            const domains = cert.name_value.split('\n');
+                            domains.forEach(d => {
+                                // Remove wildcard and normalize
+                                if (d.trim() !== domain && d.includes(domain)) {
+                                    uniqueSubdomains.add(d.trim());
+                                }
+                            });
+                        });
+
+                        // Update count
+                        discoveredSubdomains = Array.from(uniqueSubdomains);
+                        subdomainCount.innerText = discoveredSubdomains.length;
+                        counter.innerText = `FOUND: ${discoveredSubdomains.length}`;
+
+                        // Hide status and show results with animation
+                        setTimeout(() => {
+                            statusContainer.classList.add('hidden');
+                            resultsContainer.classList.remove('hidden-initially', 'opacity-0'); // Show results container with animation
+
+                            if (discoveredSubdomains.length === 0) {
+                                resultsList.innerHTML = `<div class="text-gray-400">No subdomains found for ${domain}</div>`;
+                                return;
+                            }
+
+                            // Enable download button
+                            downloadBtn.disabled = false;
+
+                            // Display subdomains with animated appearance
+                            displaySubdomains();
+                        }, 500); // Small delay to show progress complete
+
+                    })
+                    .catch(error => {
+                        clearInterval(progressInterval); // Ensure interval is cleared on error
+                        statusContainer.classList.add('hidden');
+                        resultsContainer.classList.remove('hidden-initially', 'opacity-0'); // Show results container to display error
+                        resultsList.innerHTML = `<div class="text-red-500">Error: ${error.message}</div>`;
+                    });
+            }
+
+            function flashInput() {
+                domainInput.classList.add('border-red-500');
+                domainInput.classList.add('animate-pulse');
+                setTimeout(() => {
+                    domainInput.classList.remove('border-red-500');
+                    domainInput.classList.remove('animate-pulse');
+                }, 1000);
+            }
+
+            function displaySubdomains() {
+                resultsList.innerHTML = '';
+
+                // Display in batches for performance
+                const batchSize = 20;
+                let displayed = 0;
+
+                function displayBatch() {
+                    const fragment = document.createDocumentFragment();
+                    const endIdx = Math.min(displayed + batchSize, discoveredSubdomains.length);
+
+                    for (let i = displayed; i < endIdx; i++) {
+                        const subdomain = discoveredSubdomains[i];
+                        displaySubdomain(subdomain, fragment, i);
+                    }
+
+                    resultsList.appendChild(fragment);
+                    displayed = endIdx;
+
+                    if (displayed < discoveredSubdomains.length) {
+                        setTimeout(displayBatch, 100);
+                    }
+                }
+
+                displayBatch();
+            }
+
+            function displaySubdomain(subdomain, parentElement, index) {
+                const item = document.createElement('div');
+                item.className = 'subdomain-item p-2 pl-3 rounded flex justify-between items-center relative';
+                // Removed animationDelay here to rely on the parent container's transition
+                item.innerHTML = `
+                    <div class="flex-grow pr-4 truncate">${subdomain}</div>
+                    <div class="flex-shrink-0">
+                        <span class="ip-badge px-2 py-1 rounded ip-placeholder cursor-pointer" data-subdomain="${subdomain}">Resolve IP</span>
+                    </div>
+                `;
+
+                // Add to parent
+                parentElement.appendChild(item);
+
+                // Add click handler for IP resolution
+                const ipBadge = item.querySelector('.ip-placeholder');
+                ipBadge.addEventListener('click', () => resolveIP(subdomain, ipBadge));
+            }
+
+            function resolveIP(subdomain, element) {
+                if (element.classList.contains('resolved') || element.classList.contains('resolving')) {
+                    return;
+                }
+
+                element.innerHTML = `<div class="loading-spinner mr-0" style="width:12px;height:12px;"></div>`;
+                element.classList.add('resolving');
+
+                // Use DNS over HTTPS to resolve IP
+                const dnsUrl = `https://dns.google/resolve?name=${encodeURIComponent(subdomain)}`;
+
+                fetch(dnsUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        element.classList.remove('resolving');
+                        if (data.Answer && data.Answer.length > 0) {
+                            const ip = data.Answer.find(a => a.type === 1)?.data || 'No A record';
+                            element.innerText = ip;
+                            element.classList.add('neon-blue-text');
+                            element.classList.add('resolved');
+                            resolvedIPs++;
+                            resolvedCount.innerText = resolvedIPs;
+                        } else {
+                            element.innerText = 'No IP found';
+                            element.classList.add('text-gray-400');
+                            element.classList.add('resolved');
+                        }
+                    })
+                    .catch(() => {
+                        element.classList.remove('resolving');
+                        element.innerText = 'Resolution failed';
+                        element.classList.add('text-gray-400');
+                        element.classList.add('resolved');
+                    });
+            }
+
+            function downloadResults() {
+                if (discoveredSubdomains.length === 0) return;
+
+                const content = discoveredSubdomains.join('\n');
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+
+                a.href = url;
+                a.download = `subdomains_${domainInput.value.trim()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
